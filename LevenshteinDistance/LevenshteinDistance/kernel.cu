@@ -2,157 +2,85 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-#include "LevenshteinDistance.h"
+#include "ProgramParameters.h"
+#include "DataManager.h"
+#include "CPU/LevenshteinDistance.h"
+#include "GPU/LevenshteinDistance.cuh"
 
-#include <stdio.h>
+#include <iomanip>
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <string>
-
-struct ProgramParameters {
-    std::string DataFormat{};
-    std::string ComputationMethod{};
-    std::string InputFile{};
-    std::string OutputFile{};
-    bool Success{};
-};
-
-ProgramParameters ParseProgramParameters(int argc, char* argv[]) {
-    ProgramParameters parameters{};
-
-    if (argc != 5) {
-        std::cerr << "Usage: LevenshteinDistance data_format computation_method input_file output_file" << std::endl;
-        return parameters;
-    }
-
-    parameters.DataFormat = argv[1];
-    parameters.ComputationMethod = argv[2];
-    parameters.InputFile = argv[3];
-    parameters.OutputFile = argv[4];
-
-    if (parameters.DataFormat != "txt" && parameters.DataFormat != "bin") {
-        std::cerr << "Invalid data format. Use 'txt' or 'bin'." << std::endl;
-        return parameters;
-    }
-
-    if (parameters.ComputationMethod != "cpu" && parameters.ComputationMethod != "gpu") {
-        std::cerr << "Invalid computation method. Use 'cpu' or 'gpu'." << std::endl;
-    }
-
-    parameters.Success = true;
-    return parameters;
+void DisplayProgramParameters(ProgramParameters parameters) {
+	std::cout << std::setw(25) << std::left << "Data format: "
+		<< parameters.DataFormat << std::endl;
+	std::cout << std::setw(25) << std::left << "Computation method: "
+		<< parameters.ComputationMethod << std::endl << std::endl;
 }
 
-std::pair<std::vector<char>, std::vector<char>> LoadDataFromBinaryFile(const std::string& path)
-{
-    std::ifstream file(path, std::ios::binary);
+void DisplayWords(const std::string& source, const std::string& target) {
+	const auto width = 50;
 
-    if (!file.is_open()) {
-        throw std::runtime_error("Could not open: " + path);
-    }
+	auto m = source.length();
+	auto n = target.length();
 
-    int n = 0, m = 0;
+	if (m < width) {
+		std::cout << std::setw(25) << std::left << "Source word: "
+			<< source << std::endl;
+	}
+	else {
+		std::cout << std::setw(25) << std::left << "Source word length: "
+			<< source.length() << std::endl;
+	}
 
-    file.read(reinterpret_cast<char*>(&n), sizeof(n));
-    file.read(reinterpret_cast<char*>(&m), sizeof(m));
+	if (n < width) {
+		std::cout << std::setw(25) << std::left << "Target word: "
+			<< target << std::endl;
+	}
+	else {
+		std::cout << std::setw(25) << std::left << "Target word length: "
+			<< target.length() << std::endl;
+	}
 
-    if (!file) {
-        throw std::runtime_error("Error while reading the values of 'n' and 'm' parameters.");
-    }
-
-    std::vector<char> sourceWord(n);
-    file.read(sourceWord.data(), n);
-
-    if (!file) {
-        throw std::runtime_error("Error while reading the source word.");
-    }
-
-    std::vector<char> targetWord(m);
-    file.read(targetWord.data(), m);
-
-    if (!file) {
-        throw std::runtime_error("Error while reading the target word.");
-    }
-
-    return { sourceWord, targetWord };
-}
-
-std::pair<std::vector<char>, std::vector<char>> LoadDataFromTextFile(const std::string& path)
-{
-    std::ifstream file(path);
-
-    if (!file.is_open()) {
-        throw std::runtime_error("Could not open: " + path);
-    }
-
-    int n = 0, m = 0;
-
-    std::string line;
-
-    if (!std::getline(file, line)) {
-        throw std::runtime_error("Error while reading the values of 'n' and 'm' parameters.");
-    }
-
-    std::istringstream iss(line);
-    if (!(iss >> n >> m)) {
-        throw std::runtime_error("Error while parsing the values of 'n' and 'm' parameters.");
-    }
-
-    if (!std::getline(file, line)) {
-        throw std::runtime_error("Error while reading the source word.");
-    }
-
-    std::vector<char> sourceWord(line.begin(), line.end());
-
-    if (!std::getline(file, line)) {
-        throw std::runtime_error("Error while reading the target word.");
-    }
-
-    std::vector<char> targetWord(line.begin(), line.end());
-
-    return { sourceWord, targetWord };
-}
-
-std::pair<std::vector<char>, std::vector<char>> LoadDataFromInputFile(const std::string& dataFormat, const std::string& inputFile) 
-{
-    std::cout << "Loading data from the input file..." << std::endl;
-
-    if (dataFormat == "txt") {
-        return LoadDataFromTextFile(inputFile);
-    }
-    else if (dataFormat == "bin") {
-        return LoadDataFromBinaryFile(inputFile);
-    }
-    else {
-        throw std::runtime_error("Invalid format: " + dataFormat);
-    }
+	std::cout << std::endl;
 }
 
 int main(int argc, char* argv[])
 {
-    auto parameters = ParseProgramParameters(argc, argv);
+	auto parameters = ParseProgramParameters(argc, argv);
 
-    if (!parameters.Success) {
-        return 1;
-    }
+	if (!parameters.Success) {
+		return 1;
+	}
 
-    try {
-        auto loaded = LoadDataFromInputFile(parameters.DataFormat, parameters.InputFile);
-        auto& sourceWord = loaded.first;
-        auto& targetWord = loaded.second;
+	DisplayProgramParameters(parameters);
 
-        std::string source(sourceWord.begin(), sourceWord.end());
-        std::string target(targetWord.begin(), targetWord.end());
+	try {
+		auto dataManager = DataManager{};
 
-        std::cout << source << std::endl;
-        std::cout << target << std::endl;
-    }
-    catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
-    }
+		auto loaded = dataManager.LoadDataFromInputFile(parameters.DataFormat, parameters.InputFile);
+		auto& sourceWord = loaded.first;
+		auto& targetWord = loaded.second;
 
-    return 0;
+		std::string source(sourceWord.begin(), sourceWord.end());
+		std::string target(targetWord.begin(), targetWord.end());
+
+		DisplayWords(source, target);
+
+		std::string transformation{};
+
+		if (parameters.ComputationMethod == CPU_COMPUTATION_METHOD) {
+			auto lev = CPU::LevenshteinDistance{};
+			lev.CalculateLevenshteinDistance(source, target, transformation);
+		}
+		else {
+			auto lev = GPU::LevenshteinDistance{};
+			lev.CalculateLevenshteinDistance(source, target, transformation);
+		}
+
+		dataManager.SaveDataToOutputFile(parameters.OutputFile, TXT_FORMAT, transformation);
+	}
+	catch (const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+	}
+
+	return 0;
 }

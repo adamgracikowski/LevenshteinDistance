@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "../LevenshteinDistance/LevenshteinDistance.cpp"
+#include "../LevenshteinDistance/CPU/LevenshteinDistance.cpp"
 
 class LevenshteinDistanceTest : public ::testing::Test {
 protected:

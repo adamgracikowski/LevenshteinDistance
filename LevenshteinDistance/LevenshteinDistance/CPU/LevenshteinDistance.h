@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LevenshteinDistanceBase.h"
+#include "../LevenshteinDistanceBase.h"
 
 #include <algorithm>
 #include <iostream>

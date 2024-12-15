@@ -1,21 +1,40 @@
 #include "LevenshteinDistance.h"
+#include "../Timers/TimerManager.h"
 
-#define DEBUG
+//#define DEBUG
 
 int CPU::LevenshteinDistance::CalculateLevenshteinDistance(
 	const std::string& sourceWord, 
 	const std::string& targetWord, 
 	std::string& transformation)
 {
+	auto& timerManager = Timers::TimerManager::GetInstance();
+
 	auto m = sourceWord.length();
 	auto n = targetWord.length();
 
 	auto distances = Matrix<int>(m + 1, std::vector<int>(n + 1, 0));
 	auto transformations = Matrix<char>(m + 1, std::vector<char>(n + 1, 0));
 
-	PopulateDynamically(distances, transformations, sourceWord, targetWord);
+	std::cout << "Starting computation..." << std::endl;
 
+	std::cout << "-> Finding distance..." << std::endl;
+
+	timerManager.FindDistanceTimer.Start();
+	PopulateDynamically(distances, transformations, sourceWord, targetWord);
+	timerManager.FindDistanceTimer.Stop();
+
+	std::cout << std::setw(35) << std::left << "    Elapsed time: "
+		<< timerManager.FindDistanceTimer.ElapsedMiliseconds() << " ms" << std::endl;
+
+	std::cout << "-> Retrieving transformation..." << std::endl;
+
+	timerManager.RetrieveTransformationTimer.Start();
 	transformation = RetrieveTransformation(transformations, m, n);
+	timerManager.RetrieveTransformationTimer.Stop();
+
+	std::cout << std::setw(35) << std::left << "    Elapsed time: "
+		<< timerManager.RetrieveTransformationTimer.ElapsedMiliseconds() << " ms" << std::endl;
 
 	return distances[m][n];
 }

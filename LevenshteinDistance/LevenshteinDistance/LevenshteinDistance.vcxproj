@@ -79,15 +79,24 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="GPU\LevenshteinDistance.cu" />
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CudaCheck.cuh" />
-    <ClInclude Include="LevenshteinDistance.h" />
+    <ClInclude Include="CPU\LevenshteinDistance.h" />
+    <ClInclude Include="DataManager.h" />
+    <ClInclude Include="GPU\LevenshteinDistance.cuh" />
+    <ClInclude Include="Timers\Timer.h" />
+    <ClInclude Include="Timers\TimerManager.h" />
+    <ClInclude Include="Timers\HostTimer.h" />
+    <ClInclude Include="ProgramParameters.h" />
     <ClInclude Include="LevenshteinDistanceBase.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LevenshteinDistance.cpp" />
+    <ClCompile Include="CPU\LevenshteinDistance.cpp" />
+    <ClCompile Include="DataManager.cpp" />
+    <ClCompile Include="Timers\HostTimer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
