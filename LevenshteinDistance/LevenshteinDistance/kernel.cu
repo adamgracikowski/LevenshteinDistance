@@ -60,8 +60,33 @@ int main(int argc, char* argv[])
 		auto& sourceWord = loaded.first;
 		auto& targetWord = loaded.second;
 
-		std::string source(sourceWord.begin(), sourceWord.end());
-		std::string target(targetWord.begin(), targetWord.end());
+		std::string source(
+			sourceWord.begin(), 
+			sourceWord.end()
+		);
+
+		std::string target(
+			targetWord.begin(), 
+			targetWord.end()
+		);
+
+		std::transform(
+			source.begin(), 
+			source.end(), 
+			source.begin(), 
+			[](unsigned char c) { 
+				return tolower(c); 
+			}
+		);
+
+		std::transform(
+			target.begin(), 
+			target.end(), 
+			target.begin(), 
+			[](unsigned char c) { 
+				return tolower(c); 
+			}
+		);
 
 		DisplayWords(source, target);
 
@@ -75,6 +100,8 @@ int main(int argc, char* argv[])
 			auto lev = GPU::LevenshteinDistance{};
 			lev.CalculateLevenshteinDistance(source, target, transformation);
 		}
+
+		std::cout << transformation << std::endl;
 
 		dataManager.SaveDataToOutputFile(parameters.OutputFile, TXT_FORMAT, transformation);
 	}
