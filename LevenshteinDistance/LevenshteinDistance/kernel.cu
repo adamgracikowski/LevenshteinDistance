@@ -51,7 +51,7 @@ void DisplaySummary(const std::string& computationMethod)
 	const int width = 40;
 	auto& timerManager = Timers::TimerManager::GetInstance();
 
-	auto displayTime = [&](const std::string& title, const int elapsed) {
+	auto displayTime = [&](const std::string& title, const float elapsed) {
 		std::cout << std::setw(width) << std::left << title	<< elapsed << " ms." << std::endl;
 	};
 

@@ -46,18 +46,6 @@ namespace GPU
 			bool showTables = false
 		) override;
 
-
-		
-		char* DeviceAlphabet{};
-		char* DeviceSourceWord{};
-		unsigned SourceWordLength{};
-		char* DeviceTargetWord{};
-		unsigned TargetWordLength{};
-		int* DeviceX{};
-		int* DeviceDistances{};
-		char* DeviceTransformations{};
-		int* DeviceNextColumn{};
-
 	private:
 		std::string RetrieveTransformation(char* transformations, int m, int n);
 

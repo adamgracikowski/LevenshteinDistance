@@ -79,6 +79,7 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="GPU\DeviceRawData.cu" />
     <CudaCompile Include="GPU\LevenshteinDistance.cu" />
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
@@ -86,6 +87,7 @@
     <ClInclude Include="CudaCheck.cuh" />
     <ClInclude Include="CPU\LevenshteinDistance.h" />
     <ClInclude Include="DataManager.h" />
+    <ClInclude Include="GPU\DeviceRawData.cuh" />
     <ClInclude Include="Timers\DeviceTimer.cuh" />
     <ClInclude Include="GPU\LevenshteinDistance.cuh" />
     <ClInclude Include="Timers\Timer.h" />
