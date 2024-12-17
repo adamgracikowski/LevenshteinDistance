@@ -86,6 +86,7 @@
     <ClInclude Include="CudaCheck.cuh" />
     <ClInclude Include="CPU\LevenshteinDistance.h" />
     <ClInclude Include="DataManager.h" />
+    <ClInclude Include="Timers\DeviceTimer.cuh" />
     <ClInclude Include="GPU\LevenshteinDistance.cuh" />
     <ClInclude Include="Timers\Timer.h" />
     <ClInclude Include="Timers\TimerManager.h" />
@@ -96,6 +97,7 @@
   <ItemGroup>
     <ClCompile Include="CPU\LevenshteinDistance.cpp" />
     <ClCompile Include="DataManager.cpp" />
+    <ClCompile Include="Timers\DeviceTimer.cu" />
     <ClCompile Include="Timers\HostTimer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,51 +1,14 @@
 #include "LevenshteinDistance.cuh"
+#include "../Timers/TimerManager.h"
 #include "../CudaCheck.cuh"
-#include <iostream>
-
-void PrintArray(int* array, int m, int n, std::string s, std::string t)
-{
-	std::cout << "    ";
-	for (int j = 0; j < n - 1; j++)
-		std::cout << t[j] << " ";
-	std::cout << std::endl;
-	for (int i = 0; i < m; i++)
-	{
-		if (i == 0)
-			std::cout << "  ";
-		else
-			std::cout << s[i - 1] << " ";
-
-		for (int j = 0; j < n; j++)
-			std::cout << array[i * n + j] << " ";
-		std::cout << std::endl;
-	}
-	std::cout << std::endl << std::endl;
-}
-
-void PrintArray(char* array, int m, int n, std::string s, std::string t)
-{
-	std::cout << "    ";
-	for (int j = 0; j < n - 1; j++)
-		std::cout << t[j] << " ";
-	std::cout << std::endl;
-	for (int i = 0; i < m; i++)
-	{
-		if (i == 0)
-			std::cout << "  ";
-		else
-			std::cout << s[i - 1] << " ";
-
-		for (int j = 0; j < n; j++)
-			std::cout << array[i * n + j] << " ";
-		std::cout << std::endl;
-	}
-	std::cout << std::endl << std::endl;
-}
 
 int GPU::LevenshteinDistance::CalculateLevenshteinDistance(const std::string& sourceWord,
 	const std::string& targetWord,
-	std::string& transformation)
+	std::string& transformation,
+	bool showTables)
 {
+	auto& timerManager = Timers::TimerManager::GetInstance();
+
 	SourceWordLength = static_cast<unsigned>(sourceWord.size());
 	TargetWordLength = static_cast<unsigned>(targetWord.size());
 
@@ -54,43 +17,64 @@ int GPU::LevenshteinDistance::CalculateLevenshteinDistance(const std::string& so
 
 	int hostNextColumn = 0;
 
-	// allocation
 	CUDACHECK(cudaMalloc((void**)&DeviceAlphabet, (AlphabetLength + 1) * sizeof(char)));
 	CUDACHECK(cudaMalloc((void**)&DeviceSourceWord, (SourceWordLength + 1) * sizeof(char)));
 	CUDACHECK(cudaMalloc((void**)&DeviceTargetWord, (TargetWordLength + 1) * sizeof(char)));
+	CUDACHECK(cudaMalloc((void**)&DeviceTransformations, (SourceWordLength + 1) * (TargetWordLength + 1) * sizeof(char)));
+
 	CUDACHECK(cudaMalloc((void**)&DeviceX, AlphabetLength * (TargetWordLength + 1) * sizeof(int)));
 	CUDACHECK(cudaMalloc((void**)&DeviceDistances, (SourceWordLength + 1) * (TargetWordLength + 1) * sizeof(int)));
-	CUDACHECK(cudaMalloc((void**)&DeviceTransformations, (SourceWordLength + 1) * (TargetWordLength + 1) * sizeof(char)));
 	CUDACHECK(cudaMalloc((void**)&DeviceNextColumn, sizeof(int)));
 
-	// copying
+	std::cout << "Transferring data from host to device..." << std::endl << std::endl;
+
+	timerManager.Host2DeviceDataTransferTimer.Start();
+
 	CUDACHECK(cudaMemcpy(DeviceAlphabet, Alphabet, (AlphabetLength + 1) * sizeof(char), cudaMemcpyHostToDevice));
 	CUDACHECK(cudaMemcpy(DeviceSourceWord, sourceWord.c_str(), (SourceWordLength + 1) * sizeof(char), cudaMemcpyHostToDevice));
 	CUDACHECK(cudaMemcpy(DeviceTargetWord, targetWord.c_str(), (TargetWordLength + 1) * sizeof(char), cudaMemcpyHostToDevice));
+
 	CUDACHECK(cudaMemcpy(DeviceNextColumn, &hostNextColumn, sizeof(int), cudaMemcpyHostToDevice));
 
+	timerManager.Host2DeviceDataTransferTimer.Stop();
+
+	std::cout << "Starting computation..." << std::endl << std::endl;
+
+	std::cout << " -> Populating X..." << std::endl;
+
+	timerManager.PopulateDeviceXTimer.Start();
+
 	PopulateDeviceX << <1u, AlphabetLength, (AlphabetLength + 1) * sizeof(char) >> > (
-		DeviceX, 
+		DeviceX,
 		DeviceAlphabet,
-		AlphabetLength, 
+		AlphabetLength,
 		DeviceTargetWord,
 		TargetWordLength
 	);
-	
+
 	CUDACHECK(cudaPeekAtLastError());
 	CUDACHECK(cudaDeviceSynchronize());
 
+	timerManager.PopulateDeviceXTimer.Stop();
+
+	std::cout << std::setw(35) << std::left << "    Elapsed time: "
+		<< timerManager.PopulateDeviceXTimer.ElapsedMiliseconds() << " ms" << std::endl;
+
+	std::cout << " -> Populating distances..." << std::endl;
+
+	timerManager.PopulateDeviceDistancesTimer.Start();
+
 	for (int i = 0; i < blocksInGrid; i++)
 	{
-		PopulateDeviceDistances << <1u, threadsInBlock, (threadsInBlock + SourceWordLength) * sizeof(char) >> >(
-			DeviceDistances, 
-			DeviceTransformations, 
-			DeviceX, 
-			DeviceSourceWord, 
-			SourceWordLength, 
-			DeviceTargetWord, 
-			TargetWordLength, 
-			WARP_SIZE, 
+		PopulateDeviceDistances << <1u, threadsInBlock, (threadsInBlock + SourceWordLength) * sizeof(char) >> > (
+			DeviceDistances,
+			DeviceTransformations,
+			DeviceX,
+			DeviceSourceWord,
+			SourceWordLength,
+			DeviceTargetWord,
+			TargetWordLength,
+			WARP_SIZE,
 			DeviceNextColumn
 		);
 
@@ -98,20 +82,44 @@ int GPU::LevenshteinDistance::CalculateLevenshteinDistance(const std::string& so
 		CUDACHECK(cudaDeviceSynchronize());
 	}
 
+	timerManager.PopulateDeviceDistancesTimer.Stop();
+
+	std::cout << std::setw(35) << std::left << "    Elapsed time: "
+		<< timerManager.PopulateDeviceDistancesTimer.ElapsedMiliseconds() << " ms" << std::endl;
+
 	int* hostDistances = new int[(SourceWordLength + 1) * (TargetWordLength + 1)];
 	char* hostTransformations = new char[(SourceWordLength + 1) * (TargetWordLength + 1)];
 
-	// copying
+	std::cout << std::endl << "Transferring data from device to host..." << std::endl << std::endl;
+
+	timerManager.Device2HostDataTransferTimer.Start();
+
 	CUDACHECK(cudaMemcpy(hostDistances, DeviceDistances, (SourceWordLength + 1) * (TargetWordLength + 1) * sizeof(int), cudaMemcpyDeviceToHost));
 	CUDACHECK(cudaMemcpy(hostTransformations, DeviceTransformations, (SourceWordLength + 1) * (TargetWordLength + 1) * sizeof(char), cudaMemcpyDeviceToHost));
 
+	timerManager.Device2HostDataTransferTimer.Stop();
+
 	int distance = hostDistances[SourceWordLength * (TargetWordLength + 1) + TargetWordLength];
+
+	std::cout << " -> Retrieving transformation..." << std::endl;
+
+	timerManager.RetrieveTransformationTimer.Start();
 	transformation = RetrieveTransformation(hostTransformations, SourceWordLength, TargetWordLength);
+	timerManager.RetrieveTransformationTimer.Stop();
 
-	PrintArray(hostDistances, SourceWordLength + 1, TargetWordLength + 1, sourceWord, targetWord);
-	PrintArray(hostTransformations, SourceWordLength + 1, TargetWordLength + 1, sourceWord, targetWord);
+	std::cout << std::setw(35) << std::left << "    Elapsed time: "
+		<< timerManager.RetrieveTransformationTimer.ElapsedMiliseconds() << " ms" << std::endl;
 
-	// free memory
+	if (showTables) {
+		std::cout << std::endl <<"Distances:" << std::endl << std::endl;
+		PrintMatrix(hostDistances, sourceWord, targetWord);
+
+		std::cout << std::endl << "Transformations:" << std::endl << std::endl;
+		PrintMatrix(hostTransformations, sourceWord, targetWord);
+
+		std::cout << std::endl;
+	}
+
 	CUDACHECK(cudaFree(DeviceAlphabet));
 	CUDACHECK(cudaFree(DeviceTransformations));
 	CUDACHECK(cudaFree(DeviceDistances));
@@ -126,7 +134,7 @@ int GPU::LevenshteinDistance::CalculateLevenshteinDistance(const std::string& so
 	return distance;
 }
 
-__device__ 
+__device__
 int GPU::ResolveTransformation(int s, int d, int i, char* transformation)
 {
 	int result = s;
@@ -211,7 +219,7 @@ void GPU::PopulateDeviceX(
 	}
 }
 
-__global__ 
+__global__
 void GPU::PopulateDeviceDistances(
 	int* deviceDistances,
 	char* deviceTransformations,

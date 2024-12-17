@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HostTimer.h"
+#include "DeviceTimer.cuh"
 
 namespace Timers
 {
@@ -11,7 +12,10 @@ namespace Timers
 		TimerManager& operator=(const TimerManager&) = delete;
 
 		~TimerManager() {
-			// reset timers
+			Host2DeviceDataTransferTimer.Reset();
+			Device2HostDataTransferTimer.Reset();
+			PopulateDeviceXTimer.Reset();
+			PopulateDeviceDistancesTimer.Reset();
 		}
 
 	public:
@@ -19,6 +23,11 @@ namespace Timers
 		HostTimer SaveDataToOutputFileTimer{};
 		HostTimer FindDistanceTimer{};
 		HostTimer RetrieveTransformationTimer{};
+
+		DeviceTimer Host2DeviceDataTransferTimer{};
+		DeviceTimer Device2HostDataTransferTimer{};
+		DeviceTimer PopulateDeviceXTimer{};
+		DeviceTimer PopulateDeviceDistancesTimer{};
 
 		static TimerManager& GetInstance() {
 			static TimerManager instance;

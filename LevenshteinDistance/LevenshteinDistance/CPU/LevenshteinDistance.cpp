@@ -1,17 +1,16 @@
 #include "LevenshteinDistance.h"
 #include "../Timers/TimerManager.h"
 
-//#define DEBUG
-
 int CPU::LevenshteinDistance::CalculateLevenshteinDistance(
 	const std::string& sourceWord, 
 	const std::string& targetWord, 
-	std::string& transformation)
+	std::string& transformation,
+	bool showTables)
 {
 	auto& timerManager = Timers::TimerManager::GetInstance();
 
-	auto m = sourceWord.length();
-	auto n = targetWord.length();
+	auto m = static_cast<int>(sourceWord.length());
+	auto n = static_cast<int>(targetWord.length());
 
 	auto distances = Matrix<int>(m + 1, std::vector<int>(n + 1, 0));
 	auto transformations = Matrix<char>(m + 1, std::vector<char>(n + 1, 0));
@@ -27,7 +26,7 @@ int CPU::LevenshteinDistance::CalculateLevenshteinDistance(
 	std::cout << std::setw(35) << std::left << "    Elapsed time: "
 		<< timerManager.FindDistanceTimer.ElapsedMiliseconds() << " ms" << std::endl;
 
-	std::cout << "-> Retrieving transformation..." << std::endl;
+	std::cout << " -> Retrieving transformation..." << std::endl;
 
 	timerManager.RetrieveTransformationTimer.Start();
 	transformation = RetrieveTransformation(transformations, m, n);
@@ -35,6 +34,16 @@ int CPU::LevenshteinDistance::CalculateLevenshteinDistance(
 
 	std::cout << std::setw(35) << std::left << "    Elapsed time: "
 		<< timerManager.RetrieveTransformationTimer.ElapsedMiliseconds() << " ms" << std::endl;
+
+	if (showTables) {
+		std::cout << std::endl << "Distances:" << std::endl << std::endl;
+		PrintMatrix(distances, sourceWord, targetWord);
+
+		std::cout << std::endl << "Transformations:" << std::endl << std::endl;
+		PrintMatrix(transformations, sourceWord, targetWord);
+
+		std::cout << std::endl;
+	}
 
 	return distances[m][n];
 }
@@ -81,11 +90,6 @@ void CPU::LevenshteinDistance::PopulateDynamically(
 			transformations[i][j] = currentTransformation;
 		}
 	}
-#ifdef DEBUG
-	PrintMatrix<int>(distances);
-	PrintMatrix<char>(transformations);
-#endif // DEBUG
-
 }
 
 int CPU::LevenshteinDistance::ResolveTransformation(int s, int i, int d, char& transformation)

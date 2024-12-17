@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 
-std::pair<std::vector<char>, std::vector<char>> DataManager::LoadDataFromBinaryFile(const std::string& path)
+std::pair<std::string, std::string> DataManager::LoadDataFromBinaryFile(const std::string& path)
 {
 	std::ifstream file(path, std::ios::binary);
 
@@ -22,14 +22,14 @@ std::pair<std::vector<char>, std::vector<char>> DataManager::LoadDataFromBinaryF
 		throw std::runtime_error("Error while reading the values of 'n' and 'm' parameters.");
 	}
 
-	std::vector<char> sourceWord(n);
+	std::string sourceWord(n, ' ');
 	file.read(sourceWord.data(), n);
 
 	if (!file) {
 		throw std::runtime_error("Error while reading the source word.");
 	}
 
-	std::vector<char> targetWord(m);
+	std::string targetWord(m, ' ');
 	file.read(targetWord.data(), m);
 
 	if (!file) {
@@ -39,7 +39,7 @@ std::pair<std::vector<char>, std::vector<char>> DataManager::LoadDataFromBinaryF
 	return { sourceWord, targetWord };
 }
 
-std::pair<std::vector<char>, std::vector<char>> DataManager::LoadDataFromTextFile(const std::string& path)
+std::pair<std::string, std::string> DataManager::LoadDataFromTextFile(const std::string& path)
 {
 	std::ifstream file(path);
 
@@ -64,22 +64,22 @@ std::pair<std::vector<char>, std::vector<char>> DataManager::LoadDataFromTextFil
 		throw std::runtime_error("Error while reading the source word.");
 	}
 
-	std::vector<char> sourceWord(line.begin(), line.end());
+	std::string sourceWord(line.begin(), line.end());
 
 	if (!std::getline(file, line)) {
 		throw std::runtime_error("Error while reading the target word.");
 	}
 
-	std::vector<char> targetWord(line.begin(), line.end());
+	std::string targetWord(line.begin(), line.end());
 
 	return { sourceWord, targetWord };
 }
 
-std::pair<std::vector<char>, std::vector<char>> DataManager::LoadDataFromInputFile(const std::string& dataFormat, const std::string& inputFile)
+std::pair<std::string, std::string> DataManager::LoadDataFromInputFile(const std::string& dataFormat, const std::string& inputFile)
 {
 	auto& timerManager = Timers::TimerManager::GetInstance();
 
-	std::cout << "Loading data from the input file..." << std::endl;
+	std::cout << "Loading data from the input file..." << std::endl << std::endl;
 
 	timerManager.LoadDataFromInputFileTimer.Start();
 

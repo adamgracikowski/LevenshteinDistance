@@ -3,7 +3,6 @@
 #include "../LevenshteinDistanceBase.h"
 
 #include <algorithm>
-#include <iostream>
 
 namespace CPU {
 	class LevenshteinDistance
@@ -13,7 +12,8 @@ namespace CPU {
 		int CalculateLevenshteinDistance(
 			const std::string& sourceWord,
 			const std::string& targetWord,
-			std::string& transformation
+			std::string& transformation,
+			bool showTables = false
 		) override;
 
 	private:
@@ -29,13 +29,45 @@ namespace CPU {
 		std::string RetrieveTransformation(Matrix<char>& transformations, int m, int n);
 
 		template<typename T>
-		void PrintMatrix(const Matrix<T>& matrix) {
-			for (const auto& row : matrix) {
-				for (const auto& cell : row) {
-					std::cout << cell << ' ';
+		void PrintMatrix(const Matrix<T>& matrix, const std::string& sourceWord, const std::string& targetWord) 
+		{
+			const int width = 3;
+			const size_t rows = sourceWord.length() + 1;
+			const size_t columns = targetWord.length() + 1;
+
+			auto PrintColumnHeaders = [&]()
+			{
+				std::cout << "      ";
+
+				for (size_t j = 0; j < targetWord.length(); ++j) {
+					std::cout << std::setw(width) << targetWord[j];
 				}
-				std::cout << '\n';
+				std::cout << std::endl;
+			};
+
+			auto PrintRow = [&](size_t rowIndex)
+				{
+					if (rowIndex == 0) {
+						std::cout << "   ";
+					}
+					else {
+						std::cout << std::setw(3) << sourceWord[rowIndex - 1];
+					}
+
+					for (size_t colIndex = 0; colIndex < columns; ++colIndex) {
+						std::cout << std::setw(3) << matrix[rowIndex][colIndex];
+					}
+
+					std::cout << std::endl;
+				};
+
+			PrintColumnHeaders();
+
+			for (size_t i = 0; i < rows; ++i) {
+				PrintRow(i);
 			}
+
+			std::cout << std::endl;
 		}
 	};
 }
