@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
 {
 	auto parameters = ParseProgramParameters(argc, argv);
 
+	// Check if the parameters are successfully parsed
 	if (!parameters.Success) {
 		return 1;
 	}
@@ -35,10 +36,12 @@ int main(int argc, char* argv[])
 		auto& sourceWord = loaded.first;
 		auto& targetWord = loaded.second;
 
+		// Transform both source and target words to lowercase before computation
 		TransformWords(sourceWord, targetWord);
 
 		DisplayWords(sourceWord, targetWord);
 
+		// Check if the word lengths are small enough to display tables
 		auto showTables = sourceWord.length() <= SHOW_TABLES_SIZE && targetWord.length() <= SHOW_TABLES_SIZE;
 
 		std::string transformation{};
@@ -59,6 +62,7 @@ int main(int argc, char* argv[])
 		DisplaySummary(parameters.ComputationMethod);
 	}
 	catch (const std::exception& e) {
+		// Handle any exceptions that occur during computation
 		std::cerr << e.what() << std::endl;
 	}
 

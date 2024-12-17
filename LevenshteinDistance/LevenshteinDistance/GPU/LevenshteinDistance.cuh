@@ -46,6 +46,9 @@ namespace GPU
 
 	/// <summary>
 	/// GPU implementation of the Levenshtein Distance algorithm.
+	/// 
+	/// The CUDA-based algorithm comes from: 
+	/// https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0186251
 	/// </summary>
 	class LevenshteinDistance
 		: public LevenshteinDistanceBase
