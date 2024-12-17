@@ -57,11 +57,14 @@ void CPU::LevenshteinDistance::PopulateDynamically(
 	auto m{ sourceWord.length() };
 	auto n{ targetWord.length() };
 
+	// Initialize the first column (deletion operations)
 	for (auto i{ 0 }; i <= m; ++i)
 	{
 		distances[i][0] = i;
 		transformations[i][0] = DELETE;
 	}
+
+	// Initialize the first row (insertion operations)
 	for (auto i{ 1 }; i <= n; ++i)
 	{
 		distances[0][i] = i;
@@ -83,6 +86,7 @@ void CPU::LevenshteinDistance::PopulateDynamically(
 				currentTransformation
 			);
 
+			// If no difference, the transformation is SKIP (no operation)
 			if (currentTransformation == SUBSTITUTE && !isDifferent) {
 				currentTransformation = SKIP;
 			}
@@ -117,8 +121,9 @@ std::string CPU::LevenshteinDistance::RetrieveTransformation(Matrix<char>& trans
 {
 	std::string transformation{};
 
-	int i{ m }, j{ n };
+	int i{ m }, j{ n }; // Start from the bottom-right corner of the matrix
 
+	// Traverse the transformation matrix to construct the sequence of transformations
 	while (i != 0 || j != 0)
 	{
 		transformation.push_back(transformations[i][j]);
@@ -130,11 +135,12 @@ std::string CPU::LevenshteinDistance::RetrieveTransformation(Matrix<char>& trans
 			j--;
 		}
 		else {
-			i--;
+			i--; // If the operation is SKIP or SUBSTITUTE, move diagonally
 			j--;
 		}
 	}
 
+	// Reverse the transformation string to get it in the correct order
 	std::reverse(
 		transformation.begin(),
 		transformation.end()

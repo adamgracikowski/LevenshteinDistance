@@ -3,6 +3,9 @@
 #include <vector>
 #include <string>
 
+/// <summary>
+/// Provides functionality to load and save data.
+/// </summary>
 class DataManager
 {
 public:
