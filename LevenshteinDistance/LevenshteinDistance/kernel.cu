@@ -45,20 +45,23 @@ int main(int argc, char* argv[])
 		auto showTables = sourceWord.length() <= SHOW_TABLES_SIZE && targetWord.length() <= SHOW_TABLES_SIZE;
 
 		std::string transformation{};
+		int editDistance{};
 
 		if (parameters.ComputationMethod == CPU_COMPUTATION_METHOD) {
 			auto lev = CPU::LevenshteinDistance{};
-			lev.CalculateLevenshteinDistance(sourceWord, targetWord, transformation, showTables);
+			editDistance = lev.CalculateLevenshteinDistance(sourceWord, targetWord, transformation, showTables);
 		}
 		else {
 			auto lev = GPU::LevenshteinDistance{};
-			lev.CalculateLevenshteinDistance(sourceWord, targetWord, transformation, showTables);
+			editDistance = lev.CalculateLevenshteinDistance(sourceWord, targetWord, transformation, showTables);
 		}
 
-		std::cout << std::endl << "Computed transformation path:" << std::endl;
+		std::cout << std::endl << "Computed edit distance: " << editDistance << std::endl;
+		std::cout << "Computed transformation path:" << std::endl;
+
 		std::cout << transformation << std::endl;
 
-		dataManager.SaveDataToOutputFile(parameters.OutputFile, TXT_FORMAT, transformation);
+		dataManager.SaveDataToOutputFile(parameters.OutputFile, TXT_FORMAT, transformation, editDistance);
 
 		DisplaySummary(parameters.ComputationMethod);
 	}

@@ -98,7 +98,7 @@ std::pair<std::string, std::string> DataManager::LoadDataFromInputFile(const std
 	timerManager.LoadDataFromInputFileTimer.Stop();
 }
 
-void DataManager::SaveDataToOutputFile(const std::string& outputFile, const std::string& dataFormat, const std::string& transformation)
+void DataManager::SaveDataToOutputFile(const std::string& outputFile, const std::string& dataFormat, const std::string& transformation, const int editDistance)
 {
 	auto& timerManager = Timers::TimerManager::GetInstance();
 
@@ -107,10 +107,10 @@ void DataManager::SaveDataToOutputFile(const std::string& outputFile, const std:
 	timerManager.SaveDataToOutputFileTimer.Start();
 
 	if (dataFormat == "txt") {
-		return SaveDataToTextFile(outputFile, transformation);
+		return SaveDataToTextFile(outputFile, transformation, editDistance);
 	}
 	else if (dataFormat == "bin") {
-		return SaveDataToBinaryFile(outputFile, transformation);
+		return SaveDataToBinaryFile(outputFile, transformation, editDistance);
 	}
 	else {
 		timerManager.SaveDataToOutputFileTimer.Stop();
@@ -121,7 +121,7 @@ void DataManager::SaveDataToOutputFile(const std::string& outputFile, const std:
 	timerManager.SaveDataToOutputFileTimer.Stop();
 }
 
-void DataManager::SaveDataToBinaryFile(const std::string& outputFile, const std::string& transformation)
+void DataManager::SaveDataToBinaryFile(const std::string& outputFile, const std::string& transformation, const int editDistance)
 {
 	std::ofstream file(outputFile, std::ios::binary);
 
@@ -131,11 +131,12 @@ void DataManager::SaveDataToBinaryFile(const std::string& outputFile, const std:
 
 	size_t length = transformation.size();
 
+	file.write(reinterpret_cast<const char*>(&editDistance), sizeof(editDistance));
 	file.write(reinterpret_cast<const char*>(&length), sizeof(length));
 	file.write(transformation.data(), length);
 }
 
-void DataManager::SaveDataToTextFile(const std::string& outputFile, const std::string& transformation)
+void DataManager::SaveDataToTextFile(const std::string& outputFile, const std::string& transformation, const int editDistance)
 {
 	std::ofstream file(outputFile);
 
@@ -143,6 +144,6 @@ void DataManager::SaveDataToTextFile(const std::string& outputFile, const std::s
 		throw std::runtime_error("Could not open: " + outputFile);
 	}
 
-	file << transformation.size() << std::endl;
+	file << editDistance << " " << transformation.size() << std::endl;
 	file << transformation << std::endl;
 }

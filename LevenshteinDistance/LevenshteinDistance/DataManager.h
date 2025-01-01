@@ -15,9 +15,9 @@ public:
 
     std::pair<std::string, std::string> LoadDataFromInputFile(const std::string& dataFormat, const std::string& inputFile);
 
-    void SaveDataToOutputFile(const std::string& path, const std::string& dataFormat, const std::string& transformation);
+    void SaveDataToOutputFile(const std::string& path, const std::string& dataFormat, const std::string& transformation, const int editDistance);
     
-    void SaveDataToBinaryFile(const std::string& path, const std::string& transformation);
+    void SaveDataToBinaryFile(const std::string& path, const std::string& transformation, const int editDistance);
     
-    void SaveDataToTextFile(const std::string& path, const std::string& transformation);
+    void SaveDataToTextFile(const std::string& path, const std::string& transformation, const int editDistance);
 };
