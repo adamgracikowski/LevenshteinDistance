@@ -4,7 +4,7 @@ import string
 
 def generate_random_word(length):
     """Generates a random string of the specified length."""
-    return ''.join(random.choices(string.ascii_letters, k=length))
+    return ''.join(random.choices(string.ascii_lowercase, k=length))
 
 def generate_text_file(file_name, n, m):
     """Generates a text file."""
