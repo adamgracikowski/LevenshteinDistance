@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35506.116 d17.12
+VisualStudioVersion = 17.12.35506.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LevenshteinDistance", "LevenshteinDistance\LevenshteinDistance.vcxproj", "{504D4C1D-AC1F-48FB-9368-246B0E827136}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LevenshteinDistance.Tests", "LevenshteinDistance.Tests\LevenshteinDistance.Tests.vcxproj", "{DFE97724-D97F-4012-8454-7739EBC40832}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		{504D4C1D-AC1F-48FB-9368-246B0E827136}.Debug|x64.Build.0 = Debug|x64
 		{504D4C1D-AC1F-48FB-9368-246B0E827136}.Release|x64.ActiveCfg = Release|x64
 		{504D4C1D-AC1F-48FB-9368-246B0E827136}.Release|x64.Build.0 = Release|x64
-		{DFE97724-D97F-4012-8454-7739EBC40832}.Debug|x64.ActiveCfg = Debug|x64
-		{DFE97724-D97F-4012-8454-7739EBC40832}.Debug|x64.Build.0 = Debug|x64
-		{DFE97724-D97F-4012-8454-7739EBC40832}.Release|x64.ActiveCfg = Release|x64
-		{DFE97724-D97F-4012-8454-7739EBC40832}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

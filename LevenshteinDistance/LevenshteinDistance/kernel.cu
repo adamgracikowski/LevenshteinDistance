@@ -55,6 +55,7 @@ int main(int argc, char* argv[])
 			lev.CalculateLevenshteinDistance(sourceWord, targetWord, transformation, showTables);
 		}
 
+		std::cout << std::endl << "Computed transformation path:" << std::endl;
 		std::cout << transformation << std::endl;
 
 		dataManager.SaveDataToOutputFile(parameters.OutputFile, TXT_FORMAT, transformation);
