@@ -41,12 +41,13 @@ This format is similar to the text format. At the beginning of the file are the 
 ## Output Data Format:
 
 The results are saved in text format only. 
-The first line contains the edit distance between the input words, and the second line contains a string of operations that transform the source word into the target word.
+The first line contains the edit distance between the input words followed by a single whitespace and the length of the transformation path.
+The second line contains a sequence of characters representing the operations that transform the source word into the target word.
 
 For example, for $m = 8$, $n = 6$, the output file looks like this:
 
 ```c
-8
+7 8
 ssd-isss
 ```
 
